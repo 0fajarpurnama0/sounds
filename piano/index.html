@@ -3,24 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple JS Piano</title>
+    <title>Complete JS Piano</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #222; color: white; padding-top: 50px; }
-        .piano { display: flex; justify-content: center; gap: 5px; }
-        .key {
-            width: 60px; height: 200px; background: white; border-radius: 0 0 5px 5px;
-            cursor: pointer; color: black; display: flex; align-items: flex-end;
-            justify-content: center; padding-bottom: 20px; font-weight: bold;
-            transition: background 0.1s; user-select: none;
+        body { 
+            font-family: sans-serif; text-align: center; 
+            background: #222; color: white; padding-top: 30px; 
+            user-select: none;
         }
-        .key:active { background: #ddd; transform: scale(0.98); }
-        .controls { margin-bottom: 20px; }
-        button { padding: 10px 20px; cursor: pointer; font-size: 16px; }
+
+        .controls { margin-bottom: 30px; }
+        
+        /* The Piano Container */
+        .piano-container { 
+            display: inline-flex; /* Use flex to line them up */
+            background: #111; padding: 10px; border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        /* WHITE KEYS */
+        .key.white {
+            width: 40px; height: 180px; 
+            background: white; border: 1px solid #ccc; border-radius: 0 0 5px 5px;
+            cursor: pointer; position: relative; z-index: 1;
+            display: flex; align-items: flex-end; justify-content: center;
+            color: #333; padding-bottom: 10px; font-weight: bold; font-size: 12px;
+        }
+        .key.white:active, .key.white.active { 
+            background: #eee; transform: scaleY(0.98); transform-origin: top; 
+            background: linear-gradient(to bottom, #fff 0%, #e0e0e0 100%);
+        }
+
+        /* BLACK KEYS */
+        .key.black {
+            width: 28px; height: 110px; 
+            background: #000; border-radius: 0 0 4px 4px;
+            cursor: pointer; position: relative; z-index: 2; /* Sit on top */
+            
+            /* THE TRICK: Negative margins pull the white keys closer */
+            margin-left: -14px; margin-right: -14px; 
+            
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+        }
+        .key.black:active, .key.black.active { 
+            background: #333; transform: scaleY(0.98); transform-origin: top; 
+        }
+
+        select { padding: 8px; border-radius: 4px; font-size: 16px; }
     </style>
 </head>
 <body>
 
-    <h1>JavaScript AudioSynth</h1>
+    <h1>Generated JS Piano</h1>
     
     <div class="controls">
         <label>Instrument: </label>
@@ -32,32 +66,75 @@
         </select>
     </div>
 
-    <div class="piano">
-        <div class="key" onclick="playNote('C', 4)">C</div>
-        <div class="key" onclick="playNote('D', 4)">D</div>
-        <div class="key" onclick="playNote('E', 4)">E</div>
-        <div class="key" onclick="playNote('F', 4)">F</div>
-        <div class="key" onclick="playNote('G', 4)">G</div>
-        <div class="key" onclick="playNote('A', 4)">A</div>
-        <div class="key" onclick="playNote('B', 4)">B</div>
-    </div>
+    <div class="piano-container" id="piano"></div>
 
     <script src="../audiosynth.js"></script>
 
     <script>
-        // 1. Create the AudioSynth Instance
-        // AudioSynth is a singleton in this library, accessed via 'Synth'
-        
-        function playNote(note, octave) {
-            // Get selected instrument ID from the dropdown
-            const instrumentId = document.getElementById('instrument-select').value;
-            
-            // Create the instrument (0=Piano, 1=Organ, 2=Acoustic, 3=EDM)
-            const instrument = Synth.createInstrument(instrumentId);
-            
-            // Play the note: Note Name, Octave, Duration (seconds)
-            instrument.play(note, octave, 2);
+        // 1. Define the Note Structure
+        // "s" means Sharp (Black key). Standard notes are White keys.
+        const notes = [
+            { name: 'C', type: 'white' },
+            { name: 'C#', type: 'black' },
+            { name: 'D', type: 'white' },
+            { name: 'D#', type: 'black' },
+            { name: 'E', type: 'white' },
+            { name: 'F', type: 'white' }, // No black key between E and F
+            { name: 'F#', type: 'black' },
+            { name: 'G', type: 'white' },
+            { name: 'G#', type: 'black' },
+            { name: 'A', type: 'white' },
+            { name: 'A#', type: 'black' },
+            { name: 'B', type: 'white' }
+        ];
+
+        const pianoContainer = document.getElementById('piano');
+
+        // 2. Generator Function
+        function generatePiano(startOctave, endOctave) {
+            pianoContainer.innerHTML = ''; // Clear existing
+
+            for (let oct = startOctave; oct <= endOctave; oct++) {
+                
+                notes.forEach(note => {
+                    // Create the Key DIV
+                    const key = document.createElement('div');
+                    
+                    // Assign classes (key + white/black)
+                    key.className = `key ${note.type}`;
+                    
+                    // Only label white keys to keep it clean (optional)
+                    if(note.type === 'white') {
+                        key.innerText = note.name + oct; 
+                    }
+
+                    // Add click event
+                    key.addEventListener('mousedown', () => playNote(note.name, oct));
+                    
+                    // Add click animation class (for visual feedback)
+                    key.addEventListener('mousedown', () => key.classList.add('active'));
+                    key.addEventListener('mouseup', () => key.classList.remove('active'));
+                    key.addEventListener('mouseleave', () => key.classList.remove('active'));
+
+                    // Append to container
+                    pianoContainer.appendChild(key);
+                });
+            }
         }
+
+        function playNote(note, octave) {
+            const instrumentId = document.getElementById('instrument-select').value;
+            // Handle numeric vs string ID for audiosynth
+            let inst = Synth.createInstrument(instrumentId);
+            
+            // Play note
+            inst.play(note, octave, 2);
+        }
+
+        // 3. Initialize: Generate 2 Octaves (Octave 3 and 4)
+        //generatePiano(3, 4);
+        generatePiano(2, 6);
+
     </script>
 
 </body>
