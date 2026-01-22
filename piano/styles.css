@@ -1,0 +1,45 @@
+body { 
+    font-family: sans-serif; text-align: center; 
+    background: #222; color: white; padding-top: 30px; 
+    user-select: none;
+}
+
+.controls { margin-bottom: 30px; }
+
+/* The Piano Container */
+.piano-container { 
+    display: inline-flex; /* Use flex to line them up */
+    background: #111; padding: 10px; border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    position: relative;
+}
+
+/* WHITE KEYS */
+.key.white {
+    width: 40px; height: 180px; 
+    background: white; border: 1px solid #ccc; border-radius: 0 0 5px 5px;
+    cursor: pointer; position: relative; z-index: 1;
+    display: flex; align-items: flex-end; justify-content: center;
+    color: #333; padding-bottom: 10px; font-weight: bold; font-size: 12px;
+}
+.key.white:active, .key.white.active { 
+    background: #eee; transform: scaleY(0.98); transform-origin: top; 
+    background: linear-gradient(to bottom, #fff 0%, #e0e0e0 100%);
+}
+
+/* BLACK KEYS */
+.key.black {
+    width: 28px; height: 110px; 
+    background: #000; border-radius: 0 0 4px 4px;
+    cursor: pointer; position: relative; z-index: 2; /* Sit on top */
+    
+    /* THE TRICK: Negative margins pull the white keys closer */
+    margin-left: -14px; margin-right: -14px; 
+    
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+}
+.key.black:active, .key.black.active { 
+    background: #333; transform: scaleY(0.98); transform-origin: top; 
+}
+
+select { padding: 8px; border-radius: 4px; font-size: 16px; }
